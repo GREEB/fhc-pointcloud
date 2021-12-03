@@ -1,12 +1,14 @@
 {
     "name": "webpack-test",
+    "type": "module",
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack serve",
-        "build": "webpack --mode production"
+        "build": "webpack --mode production",
+        "start": "node app.js"
     },
     "keywords": [],
     "author": "",
@@ -27,9 +29,13 @@
         "webpack-cli": "^4.5.0"
     },
     "dependencies": {
+        "body-parser": "^1.19.0",
         "cache-manager": "^3.6.0",
         "cache-manager-mongoose": "^1.0.0",
+        "connect-redis": "^6.0.0",
+        "cookie-parser": "^1.4.6",
         "dotenv": "^10.0.0",
+        "express-session": "^1.17.2",
         "fs": "^0.0.1-security",
         "http": "^0.0.1-security",
         "lodash.throttle": "^4.1.1",

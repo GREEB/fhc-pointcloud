@@ -1,9 +1,9 @@
 import '../scss/styles.scss';
 import posData from './pos.json';
 import * as THREE from 'three'
-import { OrbitControls, MapControls } from 'three/examples/jsm/controls/OrbitControls'
-import Stats from 'three/examples/jsm/libs/stats.module'
-import { color, GUI } from 'three/examples/jsm/libs/dat.gui.module'
+import { OrbitControls, MapControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import Stats from 'three/examples/jsm/libs/stats.module.js'
+import { color, GUI } from 'three/examples/jsm/libs/dat.gui.module.js'
 import round from '../public/images/textures/round.png'
 import { io } from "socket.io-client";
 
@@ -37,6 +37,7 @@ function initGui() {
 	};
 	const gui = new GUI()
 	const optionFolder = gui.addFolder('Options')
+	optionFolder.add({ add:function(){ console.log("clicked") }},'add');
 	optionFolder.add(guiLet, 'colorSchema', [ 'Height', 'Terrain'] ).onChange(function (v) { changeColor(v) })
 	optionFolder.add(material, 'opacity', 0,1).listen()
 	optionFolder.add(material, 'size', 0.0001,100).listen()

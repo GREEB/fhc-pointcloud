@@ -1,25 +1,7 @@
-const express = require('express');
-const http = require('http');
-const socketio = require('socket.io');
-const path = require('path');
+import { getInitInfo } from './modules/mongo.js';
+import {udpServer} from './modules/udpServer.js' // Create UDP Server
+import expresssocket from './modules/expresssocket.js' //Create Express and Socket server
 
-const app = express();
-const server = http.Server(app);
-const io = socketio(server);
-app.use(express.static(path.join(__dirname + '/docs')));
+//Get initial Info
+getInitInfo();
 
-app.get('/',
-        (req, res) => {
-          res.sendfile(path.join(__dirname, 'index.html'));
-        });
-
-io.on('connection',
-      (socket) => {
-        console.log('connection established');
-        socket.emit('hello', 'world');
-      });
-
-server.listen(8080,
-              () => {
-                console.log('Listening on port 8080');
-              });
