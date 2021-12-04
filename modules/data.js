@@ -1,9 +1,9 @@
 import throttle from 'lodash.throttle'
 import Position from '../models/Position.js'
 import User from '../models/User.js'
-import {udpclients} from '../modules/udpServer.js'
+import {udpClients} from '../modules/udpServer.js'
+import { createUser } from './mongo.js'
 import {redisClient} from './redis.js'
-
 
 // FIXME: Fix all of this user session logic, use something real like express-sessions
 let ioUsers = []
@@ -22,24 +22,40 @@ const addUDPuser = async (ip) => { // FIXME: TYPO
     console.log(found)
 }
 
-const addIOuser = (id,ip) => {
+const addIOuser = async (id,ip) => {
+
     // This is basically everyone going on website
     // User only gets created if you push UDP data
     // Store IO user in array to match if we get udp data
     ioUsers.push({"ioid": id, "ip": ip})
 
     //Check if we have UDP
-    const found = ioUsers.some(r=> udpServerUsers.indexOf(r.ip) >= 0)
-    console.log(found);
+    const checkCache = await client.hGetAll(ip);
+    console.log(checkCache)
 }
-const addUser = async (ip) =>{
-    const userID = Math.round(ip.split('.').reduce((a, b) => a + b, 0) * Math.PI) 
-    const findUser = await User.find({"mid": userID}).exec();
-    console.log(findUser)
+
+const createUser = throttle(function (ip) {
+
+}, 3000)
+
+const writeData = async (x, y, z, surface, flying, ip, size) =>{
+    // Check local users list
+    createUser(ip) // every x seconds check if user already exists
+
+    // write data
 }
 const throttledWrite = throttle(function (x, y, z, surface, flying, ip, size) {
-    redisClient.set('another-key', 'another-value');
-    console.log(  redisClient.get('another-key'))
+
+    // Throttle per user
+    //ip:unix
+    // if older than xms resend 
+    
+    // Create user if not yet a user
+
+    // Check if user is on website
+        // If yes guid to a view for user
+        // If not just log
+
     // if (flying === 0) return // Abort if flying
     // if (x === 0 && y === 0 && z === 0) return // Abort if 000 chord
     // const newPos = new Position({

@@ -1,16 +1,48 @@
 import {path, __dirname} from './defaults.js'
 import dgram from 'dgram';
 import { throttledWrite, } from './data.js';
+import onChange from 'on-change';
+import {redisClient} from './redis.js'
+import {createUser} from './mongo.js'
+import throttle from 'lodash.throttle'
 
 const udpServer = dgram.createSocket('udp4');
 
-let udpclients = {};
-udpclients.push = function() { Array.prototype.push.apply(this, arguments);  processQ();};
+let udpClients = {};
+let defudpClients = {}
+const addK2R = async (ip) =>{
+    await redisClient.set(ip.toString(), Date.now().toString(), {
+        EX: 10,
+        NX: true
+      });
+      await publisher.publish('', 'message');
+}
+
+let index = 0;
+
+const watchedObject = onChange(udpClients, function (path, value, previousValue, applyData) {
+    defudpClients[path] = Date.now()
+});
+
+// enable notify-keyspace-events for all kind of events (can be refined)
+// you can target a specific key with a second parameter
+// example, client_redis.subscribe('__keyevent@0__:set', 'mykey')
+const makeUDPuser = throttle(function (ip) {
+    console.log(`${ip} is ${(Date.now() - defudpClients[ip]) / 1000} seconds old`);
+
+    console.log(defudpClients)
+    watchedObject[ip] = true
+}, 1000)
+
 
 udpServer.on('message', (msg, rinfo) => {
+    // important to tag data by user so if we have a bad actor its ez to remove
+       // addK2R(rinfo.address)
+    makeUDPuser(rinfo.address)
+    // console.log(udpclients);
     // Build list of clients to watch for changes
-
-    udpclients[JSON.stringify([rinfo.address, rinfo.size, + new Date()])] = true;
+    // watchedudp[rinfo.address] = true;
+    //await client.HGETALL('key');
     let flying = 1;
     let surface = 0
     // Road edgde detection build in?  WheelOnRumbleStripFl(this byte[] bytes) { return GetSingle(bytes, 116)
@@ -54,6 +86,8 @@ udpServer.on('message', (msg, rinfo) => {
         surface = 0
     }
 
+
+    // TODO: Throttle write for each client
     throttledWrite(x, y, z, surface, flying, rinfo.address, rinfo.size)
 
 
@@ -64,11 +98,13 @@ udpServer.on('error', (err) => {
     udpServer.close();
 });
 
-
+udpServer.on('close', (err) => {
+    console.log(`udpServer error:\n${err}`);
+});
 udpServer.on('listening', () => {
     const address = udpServer.address();
     console.log(`udpServer listening ${address.address}:${address.port}`);
 });
 
 udpServer.bind(5300);
-export {udpServer, udpclients}
+export {udpServer, udpClients}

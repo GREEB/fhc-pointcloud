@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 mongoose.connect(process.env.MONGOURL);
 import Position from '../models/Position.js' // Position
 import mapModel from '../models/Map.js' // Map
+import User from '../models/User.js'
 
 let mapBounds = {
     points: 0,
@@ -11,7 +12,17 @@ let mapBounds = {
     y: {},
     z: {}
 }
-
+export const createUser = async (ip) =>{
+    const userID = Math.round(ip.split('.').reduce((a, b) => a + b, 0) * Math.PI) 
+    const findUser = await User.find({"mid": userID}).exec();
+    console.log(findUser)
+    // const newUser = new User({
+    //     mid: userID
+    // })
+    // const createUser = await newUser.save()
+    // console.log(createUser)
+    
+}
 
 export const getInitInfo = async () => {
     // totalCached = await redisClient.get('all'); // Look if we have any points
