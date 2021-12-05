@@ -1,57 +1,24 @@
 import {path, __dirname} from './defaults.js'
 import dgram from 'dgram';
 import { throttledWrite, addUDPuser} from './data.js';
-import onChange from 'on-change';
 import {redisClient} from './redis.js'
-import {createUser} from './mongo.js'
-import throttle from 'lodash.throttle'
-
+import {makeUDPuser} from './user.js'
 const udpServer = dgram.createSocket('udp4');
 
 let udpClients = {};
 let defudpClients = {}
 
-const addK2R = async (ip) =>{
+// const addK2R = async (ip) =>{
 
-    await redisClient.set(ip.toString(), Date.now().toString(), {
-        EX: 10,
-        NX: true
-      });
+//     await redisClient.set(ip.toString(), Date.now().toString(), {
+//         EX: 10,
+//         NX: true
+//       });
 
-    await publisher.publish('', 'message');
+//     await publisher.publish('', 'message');
 
-}
+// }
 
-let index = 0;
-
-const watchedObject = onChange(udpClients, function (path, value, previousValue, applyData) {
-    if (previousValue == undefined){
-        createUser(path)
-    }
-    // if previousValue != undefined && value === unix then update
-    //if (value != undefined)
-    defudpClients[path] = value
-
-});
-
-// Looks for ips that have not send data in a while and delete them
-setInterval(() => {
-    for (const ip in defudpClients) {
-        if (Object.hasOwnProperty.call(defudpClients, ip)) {
-            const element = defudpClients[ip];
-            let age = (Date.now() - element) / 1000
-            if (age > 20){
-                delete defudpClients[ip]
-                delete watchedObject[ip]
-            }
-        }
-    }
-}, 3000);
-
-// Basically add user on first connect
-const makeUDPuser = throttle(function (ip) {
-    watchedObject[ip] = Date.now()
-}, 3000)
 
 
 

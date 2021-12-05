@@ -9,7 +9,7 @@ import session from 'express-session'
 import connectRedis from 'connect-redis';
 
 import {redisClient} from './redis.js'
-import { addIOuser } from './data.js';
+import { addIOuser } from './user.js';
 const RedisStore = connectRedis(session);
 
 

@@ -62,4 +62,4 @@ const throttledWrite = throttle(function (x, y, z, surface, flying, ip, size) {
 
 }, 500);
 
-export {throttledWrite, addUDPuser, addIOuser}
+export {throttledWrite, addUDPuser}
