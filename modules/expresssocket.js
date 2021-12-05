@@ -17,8 +17,8 @@ let io
 const app = express();
 
 const httpsServer = https.createServer({
-    key: fs.readFileSync('/etc/letsencrypt/live/' + process.env.URL + '/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/' + process.env.URL + '/fullchain.pem'),
+    key: fs.readFileSync('./keys/privkey.pem'),
+    cert: fs.readFileSync('./keys/fullchain.pem'),
 }, app);
 
 httpsServer.listen(process.env.SSLPORT, () => {

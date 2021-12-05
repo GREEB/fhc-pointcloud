@@ -1,38 +1,27 @@
 import throttle from 'lodash.throttle'
 import Position from '../models/Position.js'
 import User from '../models/User.js'
-import {udpClients} from '../modules/udpServer.js'
-import { createUser } from './mongo.js'
+import {defudpClients} from '../modules/udpServer.js'
 import {redisClient} from './redis.js'
 
 // FIXME: Fix all of this user session logic, use something real like express-sessions
 let ioUsers = []
 let udpServerUsers = []
-let users = []
+
 
 const addUDPuser = async (ip) => { // FIXME: TYPO
+    console.log(`adding user with ip: ${ip}`);
+    createUser(ip)
+    // console.log(findUser)
+    // // TODO: Check if users exists
+    // // TODO: Create user in DB
+    // udpServerUsers.push(ip)
 
-    console.log(findUser)
-    // TODO: Check if users exists
-    // TODO: Create user in DB
-    udpServerUsers.push(ip)
-
-    // Check if user is on website if yes push live sockets
-    const found = ioUsers.some(r=> udpServerUsers.indexOf(r.ip) >= 0)
-    console.log(found)
+    // // Check if user is on website if yes push live sockets
+    // const found = ioUsers.some(r=> udpServerUsers.indexOf(r.ip) >= 0)
+    // console.log(found)
 }
 
-const addIOuser = async (id,ip) => {
-
-    // This is basically everyone going on website
-    // User only gets created if you push UDP data
-    // Store IO user in array to match if we get udp data
-    ioUsers.push({"ioid": id, "ip": ip})
-
-    //Check if we have UDP
-    const checkCache = await client.hGetAll(ip);
-    console.log(checkCache)
-}
 
 const createUser = throttle(function (ip) {
 
@@ -40,8 +29,7 @@ const createUser = throttle(function (ip) {
 
 const writeData = async (x, y, z, surface, flying, ip, size) =>{
     // Check local users list
-    createUser(ip) // every x seconds check if user already exists
-
+    // createUser(ip) // every x seconds check if user already exists
     // write data
 }
 const throttledWrite = throttle(function (x, y, z, surface, flying, ip, size) {

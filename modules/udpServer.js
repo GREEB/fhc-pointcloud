@@ -1,6 +1,6 @@
 import {path, __dirname} from './defaults.js'
 import dgram from 'dgram';
-import { throttledWrite, } from './data.js';
+import { throttledWrite, addUDPuser} from './data.js';
 import onChange from 'on-change';
 import {redisClient} from './redis.js'
 import {createUser} from './mongo.js'
@@ -10,29 +10,49 @@ const udpServer = dgram.createSocket('udp4');
 
 let udpClients = {};
 let defudpClients = {}
+
 const addK2R = async (ip) =>{
+
     await redisClient.set(ip.toString(), Date.now().toString(), {
         EX: 10,
         NX: true
       });
-      await publisher.publish('', 'message');
+
+    await publisher.publish('', 'message');
+
 }
 
 let index = 0;
 
 const watchedObject = onChange(udpClients, function (path, value, previousValue, applyData) {
-    defudpClients[path] = Date.now()
+    if (previousValue == undefined){
+        createUser(path)
+    }
+    // if previousValue != undefined && value === unix then update
+    //if (value != undefined)
+    defudpClients[path] = value
+
 });
 
-// enable notify-keyspace-events for all kind of events (can be refined)
-// you can target a specific key with a second parameter
-// example, client_redis.subscribe('__keyevent@0__:set', 'mykey')
-const makeUDPuser = throttle(function (ip) {
-    console.log(`${ip} is ${(Date.now() - defudpClients[ip]) / 1000} seconds old`);
+// Looks for ips that have not send data in a while and delete them
+setInterval(() => {
+    for (const ip in defudpClients) {
+        if (Object.hasOwnProperty.call(defudpClients, ip)) {
+            const element = defudpClients[ip];
+            let age = (Date.now() - element) / 1000
+            if (age > 20){
+                delete defudpClients[ip]
+                delete watchedObject[ip]
+            }
+        }
+    }
+}, 3000);
 
-    console.log(defudpClients)
-    watchedObject[ip] = true
-}, 1000)
+// Basically add user on first connect
+const makeUDPuser = throttle(function (ip) {
+    watchedObject[ip] = Date.now()
+}, 3000)
+
 
 
 udpServer.on('message', (msg, rinfo) => {
@@ -107,4 +127,4 @@ udpServer.on('listening', () => {
 });
 
 udpServer.bind(5300);
-export {udpServer, udpClients}
+export {udpServer, defudpClients}
