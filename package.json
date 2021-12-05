@@ -41,14 +41,11 @@
         "lodash.throttle": "^4.1.1",
         "mongoose": "^6.0.14",
         "on-change": "^4.0.0",
-        "p-limit": "^4.0.0",
-        "papaparse": "^5.3.1",
         "redis": "^4.0.0",
         "socket.io": "^4.4.0",
         "socket.io-client": "^4.4.0",
         "style-loader": "^2.0.0",
         "three": "^0.125.2",
-        "throat": "^6.0.1",
         "webpack-dev-server": "^4.6.0"
     }
 }
