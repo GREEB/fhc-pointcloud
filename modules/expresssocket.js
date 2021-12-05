@@ -25,12 +25,21 @@ httpsServer.listen(process.env.SSLPORT, () => {
     console.log('HTTPS Server running on port ' + process.env.SSLPORT);
 });
 
-io = new Server(httpsServer, {});
+const httpServer = http.createServer(app);
+httpServer.listen(process.env.HTTPPORT, () => {
+    console.log('HTTP Server running on port ' + process.env.HTTPPORT);
+});
+
+io = new Server(httpServer, {});
 
 io.sockets.on('connection', function (socket) {
     // FIXME: Something better
-    var clientIp = socket.handshake.headers['x-real-ip']
-    addIOuser(socket.id, clientIp)
+    var clientIp = socket.handshake.address.split(':').pop().toString()
+    if ('x-real-ip' in socket.handshake.headers){
+        var clientIp = socket.handshake.headers['x-real-ip']
+    }
+    
+    addIOuser(socket, clientIp)
     // TODO: Create user in DB, pass user when adding pos FIXME: get a better formula for IP2ID
     // TODO: Pass to data.js and match with udpServer
     //const userID = Math.round(clientIp.split('.').reduce((a, b) => a + b, 0) * Math.PI)
@@ -42,9 +51,6 @@ io.sockets.on('connection', function (socket) {
 app.use(express.static(path.join(__dirname + '/docs')));
 
 
-const httpServer = http.createServer(app);
-httpServer.listen(process.env.HTTPPORT, () => {
-    console.log('HTTP Server running on port ' + process.env.HTTPPORT);
-});
+
 
 export default httpsServer

@@ -7,7 +7,7 @@ import { color, GUI } from 'three/examples/jsm/libs/dat.gui.module.js'
 import round from '../public/images/textures/round.png'
 import { io } from "socket.io-client";
 
-const socket = io("https://securityb.us");
+const socket = io("http://192.168.0.42:8080");
 socket.on("chord", (arg) => {
 	console.log(arg);
 	parsePoint(arg)

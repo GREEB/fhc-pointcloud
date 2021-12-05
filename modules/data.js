@@ -23,26 +23,16 @@ const addUDPuser = async (ip) => { // FIXME: TYPO
 }
 
 
-const createUser = throttle(function (ip) {
-
-}, 3000)
-
 const writeData = async (x, y, z, surface, flying, ip, size) =>{
     // Check local users list
     // createUser(ip) // every x seconds check if user already exists
     // write data
 }
 const throttledWrite = throttle(function (x, y, z, surface, flying, ip, size) {
+    // import users
+    // match ip with user _id
+    // maybe give socket to push from users
 
-    // Throttle per user
-    //ip:unix
-    // if older than xms resend 
-    
-    // Create user if not yet a user
-
-    // Check if user is on website
-        // If yes guid to a view for user
-        // If not just log
 
     // if (flying === 0) return // Abort if flying
     // if (x === 0 && y === 0 && z === 0) return // Abort if 000 chord
