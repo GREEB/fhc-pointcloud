@@ -1,34 +1,28 @@
 import onChange from 'on-change';
 import throttle from 'lodash.throttle'
 import User from '../models/User.js'
+import { age } from './defaults.js';
 
-let users = {} // Main user obj to look at 
+export let users = {} // Main user obj to look at 
 
+let maxClientTimeout = 10 // UDP client "timeout" in seconds
 let udpClients, defudpClients // Helper OBJ for dumb UDP session logic
 udpClients = defudpClients = {}
 
 // FIXME: Dumbass loop, Looks for ips that have not send data in a while and delete them
-// TODO: Does not effect main users object atm
 setInterval(() => {
-    console.log(users)
-
-    for (const ip in defudpClients) {
-        if (Object.hasOwnProperty.call(defudpClients, ip)) {
-            const element = defudpClients[ip];
-            let age = (Date.now() - element) / 1000
-            if (age > 6){
-                console.log(`${ip} disconnected`);
-                delete defudpClients[ip]
-                delete watchedObject[ip]
-            }
-        }
+    for (const id in users){
+        if (age(users[id]) > maxClientTimeout)
+        delete users[id]
     }
 }, 3000);
 
-export const addUDPuser = async (ip) =>{
 
-    const userID = Math.round(ip.split('.').reduce((a, b) => a + b, 0) * Math.PI)
-    const findUser = await User.find({"mid": userID}).exec();
+export const lastSeen = (obj) =>{
+    obj.__lastSeen = Date.now()
+}
+export const addUDPuser = async (ip, userID) =>{
+    let findUser = await User.find({"mid": userID}).exec();
     let createUser;
     if(!(userID in users)) users[userID] = {};
     if (findUser.length === 0){
@@ -41,13 +35,13 @@ export const addUDPuser = async (ip) =>{
     }
     users[userID].mongodb_mid = createUser.mid
     users[userID].mongodb_id = createUser._id
+    users[userID].ip = ip
+    users[userID].__firstSeen = Date.now()
 }
-export const addIOuser = async (socket, ip) => {
+export const addIOuser = async (socket, ip, userID) => {
     // Check if we have a udp user with id
-    const userID = Math.round(ip.split('.').reduce((a, b) => a + b, 0) * Math.PI)
     if(!(userID in users)) users[userID] = {};
     users[userID].socketID = socket.id
-    users[userID].ip = ip
 
     // This is basically everyone going on website
     // User only gets created if you push UDP data
@@ -62,16 +56,16 @@ export const addIOuser = async (socket, ip) => {
 
 const watchedObject = onChange(udpClients, function (path, value, previousValue, applyData) {
     if (previousValue == undefined){
-        console.log(`${path} connected`);
-        addUDPuser(path)
+        console.log(`${path} connected to UDP`);
+        addUDPuser(path, value)
     }
     // if previousValue != undefined && value === unix then update
     //if (value != undefined)
-    defudpClients[path] = value
+    //defudpClients[path] = value
 
 });
 
 // Basically add user on first connect
-export const makeUDPuser = throttle(function (ip) {
-    watchedObject[ip] = Date.now()
+export const makeUDPuser = throttle(function (ip, userID) {
+    watchedObject[ip] = userID
 }, 3000)

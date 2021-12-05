@@ -23,9 +23,14 @@ let defudpClients = {}
 
 
 udpServer.on('message', (msg, rinfo) => {
+    let ip = rinfo.address
+    let userID
+    if (rinfo != undefined){
+        userID = Math.round(ip.split('.').reduce((a, b) => a + b, 0) * Math.PI)
+        makeUDPuser(rinfo.address, userID)
+    }
     // important to tag data by user so if we have a bad actor its ez to remove
        // addK2R(rinfo.address)
-    makeUDPuser(rinfo.address)
     // console.log(udpclients);
     // Build list of clients to watch for changes
     // watchedudp[rinfo.address] = true;
@@ -75,7 +80,7 @@ udpServer.on('message', (msg, rinfo) => {
 
 
     // TODO: Throttle write for each client
-    throttledWrite(x, y, z, surface, flying, rinfo.address, rinfo.size)
+    throttledWrite(x, y, z, surface, flying, rinfo.address, rinfo.size, userID)
 
 
 });

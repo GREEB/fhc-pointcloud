@@ -13,10 +13,10 @@ import { addIOuser } from './user.js';
 const RedisStore = connectRedis(session);
 
 
-let io
+export let io
 const app = express();
 
-const httpsServer = https.createServer({
+export const httpsServer = https.createServer({
     key: fs.readFileSync('./keys/privkey.pem'),
     cert: fs.readFileSync('./keys/fullchain.pem'),
 }, app);
@@ -38,8 +38,8 @@ io.sockets.on('connection', function (socket) {
     if ('x-real-ip' in socket.handshake.headers){
         var clientIp = socket.handshake.headers['x-real-ip']
     }
-    
-    addIOuser(socket, clientIp)
+    let userID = Math.round(clientIp.split('.').reduce((a, b) => a + b, 0) * Math.PI)
+    addIOuser(socket, clientIp, userID)
     // TODO: Create user in DB, pass user when adding pos FIXME: get a better formula for IP2ID
     // TODO: Pass to data.js and match with udpServer
     //const userID = Math.round(clientIp.split('.').reduce((a, b) => a + b, 0) * Math.PI)
@@ -49,8 +49,3 @@ io.sockets.on('connection', function (socket) {
 // Access the session as req.session
 
 app.use(express.static(path.join(__dirname + '/docs')));
-
-
-
-
-export default httpsServer
